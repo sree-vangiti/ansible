@@ -1,0 +1,30 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: false
+
+  tasks:
+          - name: java_install
+            apt: name=openjdk-8-jdk state=present
+
+          - name: download tomcat
+            get_url: url=http://apachemirror.wuchna.com/tomcat/tomcat-8/v8.5.49/bin/apache-tomcat-8.5.49.tar.gz dest=/tmp
+
+          - name: unarchive the tomcat
+            unarchive: src=/tmp/apache-tomcat-8.5.49.tar.gz dest=/home/ubuntu/ remote_src=yes
+
+          - name: copy vprofile_v1
+            copy: src=vprofile-v1.war dest=/home/ubuntu/apache-tomcat-8.5.49/webapps/
+
+          - name: start tomcat
+            shell: nohup /home/ubuntu/apache-tomcat-8.5.49/bin/startup.sh &
+
+            notify:
+                    - restart tomcat
+
+
+  handlers:
+          - name: restart tomcat
+            shell: nohup /home/ubuntu/apache-tomcat-8.5.49/bin/shutdown.sh &
+            shell: nohup /home/ubuntu/apache-tomcat-8.5.49/bin/startup.sh &             
+...
